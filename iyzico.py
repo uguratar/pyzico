@@ -1,11 +1,8 @@
 # coding=utf-8
 __author__ = 'Ugur Atar <ugur@kahvekap.com>'
-import requests
-import requests.exceptions
 import settings
-
 from iyzico_objects import IyzicoSettings, IyzicoPayloadBuilder, \
-    IyzicoResponse
+    IyzicoRequest
 
 
 class Iyzico():
@@ -29,17 +26,7 @@ class Iyzico():
                                                    description,
                                                    currency,
                                                    customer)
-
-        try:
-            raw_response = requests.post(self.url, payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
-        except Exception as e:
-            return False, e.message
+        return IyzicoRequest.execute(self.url, payload)
 
     def debit(self, amount, card,
               description, currency, customer=None,
@@ -49,16 +36,8 @@ class Iyzico():
             self._payload_builder.debit(card, amount, description,
                                         currency, customer,
                                         card_register)
+        return IyzicoRequest.execute(self.url, payload)
 
-        try:
-            raw_response = requests.post(self.url, payload, )
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
 
     def pre_authorize(self, amount, card, description, currency,
                       customer=None,):
@@ -67,16 +46,8 @@ class Iyzico():
                                                     description,
                                                     currency,
                                                     customer,)
+        return IyzicoRequest.execute(self.url, payload)
 
-        try:
-            raw_response = requests.post(self.url, payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
 
     def capture(self, amount, transaction_id, description, currency,
                 customer=None,):
@@ -85,16 +56,7 @@ class Iyzico():
                                           description,
                                           currency,
                                           customer,)
-
-        try:
-            raw_response = requests.post(self.url, payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
+        return IyzicoRequest.execute(self.url, payload)
 
     def refund(self, amount, transaction_id, description, currency,
                customer=None,):
@@ -103,16 +65,7 @@ class Iyzico():
                                          description,
                                          currency,
                                          customer,)
-
-        try:
-            raw_response = requests.post(self.url, payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
+        return IyzicoRequest.execute(self.url, payload)
 
     def reversal(self, amount, transaction_id, description, currency,
                  customer=None,):
@@ -121,46 +74,16 @@ class Iyzico():
                                            description,
                                            currency,
                                            customer,)
-
-        try:
-            raw_response = requests.post(self.url, payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
+        return IyzicoRequest.execute(self.url, payload)
 
     def register_card(self, card):
 
         payload = \
             self._payload_builder.register_card(card)
-
-        try:
-            raw_response = requests.post(self.register_card_url, payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
-        except Exception as e:
-            return False, e.message
+        return IyzicoRequest.execute(self.register_card_url, payload)
 
     def delete_card(self, card_token):
 
         payload = \
             self._payload_builder.delete_card(card_token)
-
-        try:
-            raw_response = requests.post(self.delete_card_url,
-                                         payload)
-            response = IyzicoResponse(raw_response)
-            return response.success, response
-        except ValueError as value_error:
-            return False, value_error.message
-        except requests.exceptions.Timeout as timeout:
-            return False, timeout.message
-        except Exception as e:
-            return False, e.message
+        return IyzicoRequest.execute(self.delete_card_url, payload)

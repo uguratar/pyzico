@@ -1,7 +1,8 @@
 # coding=utf-8
 
 from iyzico import Iyzico
-from iyzico_objects import IyzicoCard, IyzicoCustomer, IyzicoCardToken
+from iyzico_objects import IyzicoCard, IyzicoCustomer,\
+     IyzicoCardToken, IyzicoHTTPException, IyzicoValueException
 
 if __name__ == '__main__':
     my_card = IyzicoCard("4242424242424242", "10", "2015", "000",
@@ -41,13 +42,10 @@ if __name__ == '__main__':
                                      "Iyzico python library test",
                                      "TRY")
     '''
-
-
-    success, result = payment.debit(1, my_card,
-                                    "Iyzico python library test",
-                                    "TRY", my_customer, True)
-
-    if success:
+    try:
+        result = payment.debit(1, my_card,
+                                        "Iyzico python library test",
+                                        "TRY", my_customer, True)
         if result.success:
             print result.mode
             print result.response
@@ -61,8 +59,7 @@ if __name__ == '__main__':
             print result.response["error_message"]
             print result.response["request_id"]
             print result.response["error_code"]
-    else:
-        print result.response
-        print result.response["error_message"]
-        print result.response["request_id"]
-        print result.response["error_code"]
+    except (IyzicoHTTPException, IyzicoValueException) as ex:
+        print ex
+
+

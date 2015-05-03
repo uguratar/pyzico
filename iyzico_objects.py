@@ -1,8 +1,20 @@
 # coding=utf-8
 __author__ = 'Ugur Atar <ugur@kahvekap.com>'
-
+import requests
 import settings
 import uuid
+
+
+class IyzicoValueException(ValueError):
+
+    def __init__(self, *args, **kwargs):
+        super(IyzicoValueException, self).__init__(*args, **kwargs)
+
+
+class IyzicoHTTPException(IOError):
+
+    def __init__(self, *args, **kwargs):
+        super(IyzicoHTTPException, self).__init__(*args, **kwargs)
 
 
 class IyzicoCard:
@@ -273,6 +285,22 @@ class IyzicoPayloadBuilder:
     def _append_object(self, obj):
             for attr, value in obj.__dict__.iteritems():
                 self.payload[attr] = value
+
+
+class IyzicoRequest():
+
+    @staticmethod
+    def execute(url, payload):
+        try:
+            raw_response = requests.post(url, payload)
+            raw_response.raise_for_status()
+            response = IyzicoResponse(raw_response)
+            return response
+        except requests.RequestException as re:
+            raise IyzicoHTTPException(re)
+        except ValueError as value_error:
+            raise IyzicoValueException(value_error)
+
 
 
 class IyzicoResponse():
