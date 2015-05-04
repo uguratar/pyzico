@@ -8,6 +8,7 @@
     $ cp settings.dist.py settings.py
 
 İlk olarak oluşturduğunuz settings.py dosyasına Iyzico'dan aldığınız api_id ve api_secret parametrelerini yazmanız gerekmekte.
+
 Iyzico api üzerinden "debit", "pre-authorization", "capture", "reversal", "refund", "reversal" işlemlerini yapabilirsiniz.
 Ayrıca kredi kartı bilgilerini saklayarak, kredi kartına ait token ile de debit işlemi yapabilirsiniz.
 
@@ -33,4 +34,4 @@ Ayrıca kredi kartı bilgilerini saklayarak, kredi kartına ait token ile de deb
     except (IyzicoHTTPException, IyzicoValueException) as ex:
         print ex
 
-Daha fazla örnek için <a href="https://github.com/uguratar/pyzico/blob/master/sample.py">sample.py</a> dosyasına gözatabilirsiniz.
+Daha fazla örnek için <a href="https://github.com/uguratar/pyzico/blob/master/sample.py">sample.py</a> dosyasına göz atabilirsiniz.
