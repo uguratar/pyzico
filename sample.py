@@ -15,6 +15,20 @@ if __name__ == '__main__':
 
     payment = Iyzico()
 
+    try:
+        result = payment.debit(1, my_card,
+                                        "Iyzico python library test",
+                                        "TRY", my_customer, True)
+        if result.success:
+            print result.transaction_state
+            print result.transaction_id
+            print result.reference_id
+            print result.request_id
+        else:
+            print result.error_code
+            print result.error_message
+    except (IyzicoHTTPException, IyzicoValueException) as ex:
+        print ex
 
     '''
     success, result = payment.debit_with_token(1, my_token,
@@ -42,20 +56,6 @@ if __name__ == '__main__':
                                      "Iyzico python library test",
                                      "TRY")
     '''
-    try:
-        result = payment.debit(1, my_card,
-                                        "Iyzico python library test",
-                                        "TRY", my_customer, True)
-        if result.success:
-            print result.transaction_state
-            print result.transaction_id
-            print result.reference_id
-            print result.request_id
 
-        else:
-            print result.error_code
-            print result.error_message
-    except (IyzicoHTTPException, IyzicoValueException) as ex:
-        print ex
 
 
