@@ -14,6 +14,13 @@ class IyzicoValueException(ValueError):
 class IyzicoHTTPException(IOError):
 
     def __init__(self, *args, **kwargs):
+        response = kwargs.pop('response', None)
+        self.response = response
+        self.request = kwargs.pop('request', None)
+        if (response is not None and not self.request and
+                hasattr(response, 'request')):
+            self.request = self.response.request
+
         super(IyzicoHTTPException, self).__init__(*args, **kwargs)
 
 
@@ -293,14 +300,12 @@ class IyzicoRequest():
     def execute(url, payload):
         try:
             raw_response = requests.post(url, payload)
-            raw_response.raise_for_status()
             response = IyzicoResponse(raw_response)
             return response
         except requests.RequestException as re:
-            raise IyzicoHTTPException(re)
+            raise IyzicoHTTPException(re.args, response=re.response)
         except ValueError as value_error:
             raise IyzicoValueException(value_error)
-
 
 
 class IyzicoResponse():
@@ -309,6 +314,7 @@ class IyzicoResponse():
         self._raw_response = server_response
         self._json_response = server_response.json()
         self.response = self._json_response["response"]
+        self.request_id = self.response["request_id"]
 
         if self.response["state"] == "success":
             self.success = True
@@ -320,8 +326,17 @@ class IyzicoResponse():
 
             try:
                 self.transaction = self._json_response["transaction"]
+                self.transaction_id = \
+                    self._json_response["transaction"]["transaction_id"]
+                self.transaction_state = \
+                    self._json_response["transaction"]["state"]
+                self.reference_id = \
+                    self._json_response["transaction"]["reference_id"]
             except KeyError:
                 self.transaction = None
+                self.transaction_id = None
+                self.transaction_state = None
+                self.reference_id = None
 
             try:
                 self.account = self._json_response["account"]
@@ -340,6 +355,16 @@ class IyzicoResponse():
 
         else:
             self.success = False
+
+            try:
+                self.error_message = self.response["error_message"]
+            except KeyError:
+                self.error_message = None
+
+            try:
+                self.error_code = self.response["error_code"]
+            except KeyError:
+                self.error_code = None
 
     @property
     def response(self):

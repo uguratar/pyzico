@@ -47,18 +47,14 @@ if __name__ == '__main__':
                                         "Iyzico python library test",
                                         "TRY", my_customer, True)
         if result.success:
-            print result.mode
-            print result.response
-            print result.account
-            print result.transaction
-            print result.customer
-            print result.card_token
+            print result.transaction_state
+            print result.transaction_id
+            print result.reference_id
+            print result.request_id
 
         else:
-            print result.response
-            print result.response["error_message"]
-            print result.response["request_id"]
-            print result.response["error_code"]
+            print result.error_code
+            print result.error_message
     except (IyzicoHTTPException, IyzicoValueException) as ex:
         print ex
 
