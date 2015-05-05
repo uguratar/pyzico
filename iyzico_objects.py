@@ -5,6 +5,12 @@ import settings
 import uuid
 
 
+class IyzicoCardException(ValueError):
+
+    def __init__(self, *args, **kwargs):
+        super(IyzicoCardException, self).__init__(*args, **kwargs)
+
+
 class IyzicoValueException(ValueError):
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +40,13 @@ class IyzicoCard:
         self.card_expiry_year = card_expiry_year
         self.card_verification = card_verification
         self.card_holder_name = card_holder_name
-        self.card_brand = self._card_brand()
+        self.card_brand = None
+        self._bin_response = None
+        self._valid = self.validate()
+
+    @property
+    def is_valid(self):
+        return self._valid
 
     @property
     def card_number(self):
@@ -60,6 +72,23 @@ class IyzicoCard:
     def card_holder_name(self):
         return self.card_holder_name
 
+    def _bin_check(self):
+        payload = {'api_id': settings.api_id,
+                   'secret': settings.api_secret,
+                   'bin': self.card_number[:6]}
+        try:
+            raw_response = requests.post(settings.bin_check_url,
+                                         payload)
+            bin_response = IyzicoBinResponse(raw_response)
+            self._bin_response = bin_response
+            return bin_response
+        except requests.RequestException as re:
+            self.card_brand = self._card_brand()
+            raise IyzicoHTTPException(re.args, response=re.response)
+        except ValueError as value_error:
+            self.card_brand = self._card_brand()
+            raise IyzicoValueException(value_error)
+
     def _card_brand(self):
         number = str(self.card_number)
         card_brand = "Invalid"
@@ -77,6 +106,27 @@ class IyzicoCard:
             if number[:1] == "4":
                 card_brand = "VISA"
         return card_brand
+
+    def validate(self):
+        if self._bin_response is None:
+            bin_response = self._bin_check()
+            if bin_response.success:
+                self._valid = True
+                return True
+            else:
+                self._valid = False
+                return False
+        elif self._bin_response.bin != self.card_number[:6]:
+            bin_response = self._bin_check()
+            if bin_response.success:
+                self._valid = True
+                return True
+            else:
+                self._valid = False
+                return False
+        elif self._bin_response.success:
+            self._valid = True
+            return True
 
 
 class IyzicoCustomer:
@@ -187,8 +237,7 @@ class IyzicoPayloadBuilder:
                             + ": card is not instance of "
                             + str(IyzicoCard))
 
-        for attr, value in card.__dict__.iteritems():
-            self.payload[attr] = value
+        self._append_object(card)
 
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "DB"
@@ -211,8 +260,7 @@ class IyzicoPayloadBuilder:
                             + ": card is not instance of "
                             + str(IyzicoCard))
 
-        for attr, value in card.__dict__.iteritems():
-            self.payload[attr] = value
+        self._append_object(card)
 
         return self.payload
 
@@ -222,8 +270,7 @@ class IyzicoPayloadBuilder:
                             + ": card token is not instance of "
                             + str(IyzicoCardToken))
 
-        for attr, value in card_token.__dict__.iteritems():
-            self.payload[attr] = value
+        self._append_object(card_token)
 
         return self.payload
 
@@ -234,8 +281,7 @@ class IyzicoPayloadBuilder:
                             + ": card is not instance of "
                             + str(IyzicoCard))
 
-        for attr, value in card.__dict__.iteritems():
-            self.payload[attr] = value
+        self._append_object(card)
 
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "PA"
@@ -291,7 +337,8 @@ class IyzicoPayloadBuilder:
 
     def _append_object(self, obj):
             for attr, value in obj.__dict__.iteritems():
-                self.payload[attr] = value
+                if not attr.startswith('_'):
+                    self.payload[attr] = value
 
 
 class IyzicoRequest():
@@ -314,7 +361,15 @@ class IyzicoResponse():
         self._raw_response = server_response
         self._json_response = server_response.json()
         self.response = self._json_response["response"]
-        self.request_id = self.response["request_id"]
+        self.error_message = None
+        self.error_code = None
+        self.transaction = None
+        self.transaction_id = None
+        self.transaction_state = None
+        self.reference_id = None
+        self.request_id = None
+        self.account = None
+        self.card_token = None
 
         if self.response["state"] == "success":
             self.success = True
@@ -337,6 +392,11 @@ class IyzicoResponse():
                 self.transaction_id = None
                 self.transaction_state = None
                 self.reference_id = None
+
+            try:
+                self.request_id = self.response["request_id"]
+            except KeyError:
+                self.request_id = None
 
             try:
                 self.account = self._json_response["account"]
@@ -393,3 +453,48 @@ class IyzicoResponse():
     @property
     def success(self):
         return self.success
+
+
+class IyzicoBinResponse():
+    def __init__(self, server_response):
+        self._raw_response = server_response
+        self._json_response = server_response.json()
+        self.details = self._json_response["details"]
+        self.success = False
+
+        if self._json_response["status"] == "SUCCESS":
+            self.success = True
+            self.card_type = self.details["CARD_TYPE"]
+            self.bin = self.details["BIN"]
+            self.card_brand = self.details["BRAND"]
+            self.bank_code = self.details["BANK_CODE"]
+            self.issuer = self.details["ISSUER"]
+
+    @property
+    def success(self):
+        return self.success
+
+    @property
+    def card_type(self):
+        return self.card_type
+
+    @property
+    def bin(self):
+        return self.bin
+
+    @property
+    def card_brand(self):
+        return self.card_brand
+
+    @property
+    def bank_code(self):
+        return self.bank_code
+
+    @property
+    def issuer(self):
+        return self.issuer
+
+    @property
+    def details(self):
+        return self.details
+

@@ -1,8 +1,8 @@
 # coding=utf-8
 
 from iyzico import Iyzico
-from iyzico_objects import IyzicoCard, IyzicoCustomer,\
-     IyzicoCardToken, IyzicoHTTPException, IyzicoValueException
+from iyzico_objects import IyzicoCard, IyzicoCustomer, \
+    IyzicoCardToken, IyzicoHTTPException, IyzicoValueException
 
 if __name__ == '__main__':
     my_card = IyzicoCard("4242424242424242", "10", "2015", "000",
@@ -11,51 +11,58 @@ if __name__ == '__main__':
     my_customer = IyzicoCustomer("First Name", "Last Name",
                                  "email@email")
 
-    my_token = IyzicoCardToken("str_card_token")
-
     payment = Iyzico()
 
     try:
         result = payment.debit(1, my_card,
                                         "Iyzico python library test",
                                         "TRY", my_customer, True)
+        print result.card_token
         if result.success:
             print result.transaction_state
             print result.transaction_id
             print result.reference_id
             print result.request_id
+            print result.card_token
+            my_token = IyzicoCardToken(result.card_token)
+
         else:
             print result.error_code
             print result.error_message
     except (IyzicoHTTPException, IyzicoValueException) as ex:
         print ex
 
-    '''
-    success, result = payment.debit_with_token(1, my_token,
-                                               "Python card token",
-                                               "TRY")
 
-    success, result = payment.register_card(my_card)
 
-    success, result = payment.delete_card(my_token)
+    '''result = payment.debit_with_token(1, my_token,
+                                      "Python debit with "
+                                      "card token",
+                                      "TRY")'''
 
-    success, result = payment.pre_authorize(1, my_card,
+    '''result = payment.register_card(my_card)
+
+    result = payment.delete_card(my_token)'''
+
+    '''result2 = payment.pre_authorize(1, my_card,
                                             "Iyzico python library test",
                                             "TRY")
+    print result2.success
 
-    success, result = payment.capture(1,
-                                      "TRANSACTION ID",
-                                      "Iyzico python library test",
-                                      "TRY")
-
-    success, result = payment.reversal(1, "TRANSACTION ID",
+    result3 = payment.capture(1, result2.transaction_id,
+                             "Iyzico python library test",
+                             "TRY")
+    print result3.success
+    result4 = payment.reversal(1, result.transaction_id,
                                        "Iyzico python library test",
                                        "TRY")
+    print result4.success
 
-    success, result = payment.refund(1, "TRANSACTION ID",
+    result5 = payment.refund(1, result3.transaction_id,
                                      "Iyzico python library test",
                                      "TRY")
-    '''
+    print result5.success'''
+
+
 
 
 

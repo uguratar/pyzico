@@ -9,7 +9,7 @@
 
 İlk olarak oluşturduğunuz settings.py dosyasına Iyzico'dan aldığınız api_id ve api_secret parametrelerini yazmanız gerekmekte.
 
-Iyzico api üzerinden "debit", "pre-authorization", "capture", "reversal", "refund", "reversal" işlemlerini yapabilirsiniz.
+Iyzico api üzerinden "debit", "pre-authorization", "capture", "reversal", "refund" işlemlerini yapabilirsiniz.
 Ayrıca kredi kartı bilgilerini saklayarak, kredi kartına ait token ile de debit işlemi yapabilirsiniz.
 
     
