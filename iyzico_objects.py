@@ -42,7 +42,13 @@ class IyzicoCard:
         self.card_holder_name = card_holder_name
         self.card_brand = None
         self._bin_response = None
-        self._valid = self.validate()
+        self._connector = None
+        self._valid = False
+        self.validate()
+
+    @property
+    def connector(self):
+        return self._connector
 
     @property
     def is_valid(self):
@@ -71,6 +77,33 @@ class IyzicoCard:
     @property
     def card_holder_name(self):
         return self.card_holder_name
+
+    def validate(self):
+        if self._bin_response is None:
+            self._bin_check()
+            if self._bin_response.success:
+                self._valid = True
+                self._connector = self._find_connector()
+                self.card_brand = self._bin_response.issuer
+            else:
+                self._valid = False
+                self.card_brand = self._card_brand()
+
+        elif self._bin_response.bin != self.card_number[:6]:
+            self._bin_check()
+            if self._bin_response.success:
+                self._connector = self._find_connector()
+                self.card_brand = self._bin_response.issuer
+                self._valid = True
+            else:
+                self._valid = False
+                self.card_brand = self._card_brand()
+
+        elif self._bin_response.success:
+            self._valid = True
+            self.card_brand = self._bin_response.issuer
+            self._connector = self._find_connector()
+
 
     def _bin_check(self):
         payload = {'api_id': settings.api_id,
@@ -107,26 +140,22 @@ class IyzicoCard:
                 card_brand = "VISA"
         return card_brand
 
-    def validate(self):
-        if self._bin_response is None:
-            bin_response = self._bin_check()
-            if bin_response.success:
-                self._valid = True
-                return True
-            else:
-                self._valid = False
-                return False
-        elif self._bin_response.bin != self.card_number[:6]:
-            bin_response = self._bin_check()
-            if bin_response.success:
-                self._valid = True
-                return True
-            else:
-                self._valid = False
-                return False
-        elif self._bin_response.success:
-            self._valid = True
-            return True
+    def _find_connector(self):
+        if self._bin_response.card_brand == "Bonus":
+            return "Denizbank"
+        elif self._bin_response.card_brand == "Maximum":
+            return "Isbank"
+        elif self._bin_response.card_brand == "World":
+            return "Vakifbank"
+
+        if self._bin_response.bank_code == "12":
+            return "Halkbank"
+        elif self._bin_response.bank_code == "111":
+            return "Finansbank"
+        elif self._bin_response.bank_code == "208":
+            return "Bankasya"
+
+        return "Bankasya"
 
 
 class IyzicoCustomer:
@@ -230,7 +259,8 @@ class IyzicoPayloadBuilder:
         return self.payload
 
     def debit(self, card, amount, descriptor, currency,
-              customer=None, card_register=False):
+              customer=None, card_register=False,
+              installment=None):
 
         if not isinstance(card, IyzicoCard):
             raise TypeError(str(self.__class__)
@@ -244,6 +274,11 @@ class IyzicoPayloadBuilder:
         self.payload["amount"] = str(100*(int(amount)))
         self.payload["currency"] = currency
         self.payload["descriptor"] = descriptor
+
+        if installment is not None and isinstance(installment, int) \
+                and installment > 1:
+            self.payload["connector_type"] = card.connector
+            self.payload["installment_count"] = installment
 
         if card_register:
             self.payload["card_register"] = str(int(card_register))
@@ -333,6 +368,12 @@ class IyzicoPayloadBuilder:
                     customer)
         self.payload["type"] = "RV"
 
+        return self.payload
+
+    def installment_matrix(self, amount, bin_number):
+        self.payload["bin_number"] = bin_number
+        self.payload["amount"] = str(100*(int(amount)))
+        del self.payload["response_mode"]
         return self.payload
 
     def _append_object(self, obj):

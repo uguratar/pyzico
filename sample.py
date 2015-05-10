@@ -5,7 +5,7 @@ from iyzico_objects import IyzicoCard, IyzicoCustomer, \
     IyzicoCardToken, IyzicoHTTPException, IyzicoValueException
 
 if __name__ == '__main__':
-    my_card = IyzicoCard("4242424242424242", "10", "2015", "000",
+    my_card = IyzicoCard("424242424242424", "10", "2015", "000",
                          "Python Test")
 
     my_customer = IyzicoCustomer("First Name", "Last Name",
@@ -14,10 +14,10 @@ if __name__ == '__main__':
     payment = Iyzico()
 
     try:
-        result = payment.debit(1, my_card,
+        result = payment.debit_with_installment(1, my_card,
+                                        "Installment "
                                         "Iyzico python library test",
-                                        "TRY", my_customer, True)
-        print result.card_token
+                                        "TRY", my_customer, True, 6)
         if result.success:
             print result.transaction_state
             print result.transaction_id

@@ -2,7 +2,7 @@
 __author__ = 'Ugur Atar <ugur@kahvekap.com>'
 import settings
 from iyzico_objects import IyzicoSettings, IyzicoPayloadBuilder, \
-    IyzicoRequest, IyzicoCardException
+    IyzicoRequest, IyzicoCardException, IyzicoCard
 
 
 class Iyzico():
@@ -95,3 +95,38 @@ class Iyzico():
         payload = \
             self._payload_builder.delete_card(card_token)
         return IyzicoRequest.execute(self.delete_card_url, payload)
+
+    '''def installment_matrix(self, amount, card):
+        if not isinstance(card, IyzicoCard):
+            raise IyzicoCardException("Invalid card information supplied")
+
+        payload = self._payload_builder.installment_matrix(amount, card.card_number[:6])
+
+        if not card.is_valid:
+            card.validate()
+            if card.is_valid:
+                return IyzicoRequest.execute\
+                    (settings.installment_url, payload)
+            else:
+                raise IyzicoCardException("We couldn't validate your card")
+        else:
+            return IyzicoRequest.execute\
+                (settings.installment_url, payload)'''
+
+    def debit_with_installment(self, amount, card,
+                               description, currency, customer=None,
+                               card_register=False,
+                               installment=None):
+        if not card.is_valid:
+            raise IyzicoCardException("Invalid credit card info.")
+
+        if card.connector is None:
+            raise IyzicoCardException("Card connector not found.")
+
+        payload = \
+            self._payload_builder.debit(card, amount, description,
+                                        currency, customer,
+                                        card_register,
+                                        installment)
+
+        return IyzicoRequest.execute(self.url, payload)
