@@ -108,7 +108,7 @@ class Iyzico():
                 return IyzicoRequest.execute\
                     (settings.installment_url, payload)
             else:
-                raise IyzicoCardException("We couldn't validate your card")
+                raise IyzicoCardException("We can't validate your card")
         else:
             return IyzicoRequest.execute\
                 (settings.installment_url, payload)

@@ -6,6 +6,7 @@
     $ source env/bin/activate
     $ pip install -r requirements.txt
     $ cp settings.dist.py settings.py
+    $ python -m unittest -v test
 
 İlk olarak oluşturduğunuz settings.py dosyasına Iyzico'dan aldığınız api_id ve api_secret parametrelerini yazmanız gerekmekte.
 
@@ -35,3 +36,7 @@ Ayrıca kredi kartı bilgilerini saklayarak, kredi kartına ait token ile de deb
         print ex
 
 Daha fazla örnek için <a href="https://github.com/uguratar/pyzico/blob/master/sample.py">sample.py</a> dosyasına göz atabilirsiniz.
+
+### Todo
+  * Testler yazılmalı
+  * Taksit matrisini çıkartan installment_matrix metodu farklı bir hesapla  test edilmeli
