@@ -5,7 +5,7 @@ from iyzico_objects import IyzicoCard, IyzicoCustomer, \
     IyzicoCardToken, IyzicoHTTPException, IyzicoValueException
 
 if __name__ == '__main__':
-    my_card = IyzicoCard("424242424242424", "10", "2015", "000",
+    my_card = IyzicoCard("4242424242424242", "10", "2015", "000",
                          "Python Test")
 
     my_customer = IyzicoCustomer("First Name", "Last Name",

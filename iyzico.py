@@ -96,7 +96,7 @@ class Iyzico():
             self._payload_builder.delete_card(card_token)
         return IyzicoRequest.execute(self.delete_card_url, payload)
 
-    '''def installment_matrix(self, amount, card):
+    def installment_matrix(self, amount, card):
         if not isinstance(card, IyzicoCard):
             raise IyzicoCardException("Invalid card information supplied")
 
@@ -111,7 +111,7 @@ class Iyzico():
                 raise IyzicoCardException("We couldn't validate your card")
         else:
             return IyzicoRequest.execute\
-                (settings.installment_url, payload)'''
+                (settings.installment_url, payload)
 
     def debit_with_installment(self, amount, card,
                                description, currency, customer=None,

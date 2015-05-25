@@ -104,7 +104,6 @@ class IyzicoCard:
             self.card_brand = self._bin_response.issuer
             self._connector = self._find_connector()
 
-
     def _bin_check(self):
         payload = {'api_id': settings.api_id,
                    'secret': settings.api_secret,
