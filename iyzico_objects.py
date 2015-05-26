@@ -232,8 +232,12 @@ class IyzicoPayloadBuilder:
             raise TypeError(str(self.__class__)
                             + ": settings is not instance of "
                             + str(IyzicoSettings))
+        self.settings = settings
+        self.reset()
 
-        self._append_object(settings)
+    def reset(self):
+        self.payload = {}
+        self._append_object(self.settings)
         self.payload['response_mode'] = 'SYNC'
 
     def debit_with_token(self, card_token, amount, descriptor,
@@ -243,7 +247,7 @@ class IyzicoPayloadBuilder:
             raise TypeError(str(self.__class__)
                             + ": card_token is not instance of "
                             + str(IyzicoCardToken))
-
+        self.reset()
         self.payload['external_id'] = uuid.uuid1().hex
         self._append_object(card_token)
         self.payload["type"] = "DB"
@@ -265,7 +269,7 @@ class IyzicoPayloadBuilder:
             raise TypeError(str(self.__class__)
                             + ": card is not instance of "
                             + str(IyzicoCard))
-
+        self.reset()
         self._append_object(card)
 
         self.payload['external_id'] = uuid.uuid1().hex
@@ -277,7 +281,7 @@ class IyzicoPayloadBuilder:
         if installment is not None and isinstance(installment, int) \
                 and installment > 1:
             self.payload["connector_type"] = card.connector
-            self.payload["installment_count"] = installment
+            self.payload["installment_count"] = str(int(installment))
 
         if card_register:
             self.payload["card_register"] = str(int(card_register))
@@ -293,7 +297,7 @@ class IyzicoPayloadBuilder:
             raise TypeError(str(self.__class__)
                             + ": card is not instance of "
                             + str(IyzicoCard))
-
+        self.reset()
         self._append_object(card)
 
         return self.payload
@@ -303,7 +307,7 @@ class IyzicoPayloadBuilder:
             raise TypeError(str(self.__class__)
                             + ": card token is not instance of "
                             + str(IyzicoCardToken))
-
+        self.reset()
         self._append_object(card_token)
 
         return self.payload
@@ -314,7 +318,7 @@ class IyzicoPayloadBuilder:
             raise TypeError(str(self.__class__)
                             + ": card is not instance of "
                             + str(IyzicoCard))
-
+        self.reset()
         self._append_object(card)
 
         self.payload['external_id'] = uuid.uuid1().hex
@@ -332,6 +336,7 @@ class IyzicoPayloadBuilder:
     def capture(self, transaction_id, amount, descriptor, currency,
                 customer=None, ):
 
+        self.reset()
         self.payload['transaction_id'] = transaction_id
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "CP"
@@ -348,6 +353,7 @@ class IyzicoPayloadBuilder:
     def refund(self, transaction_id, amount, descriptor, currency,
                customer=None,):
 
+        self.reset()
         self.payload['transaction_id'] = transaction_id
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "RF"
@@ -363,6 +369,7 @@ class IyzicoPayloadBuilder:
 
     def reversal(self, transaction_id, amount, descriptor, currency,
                  customer=None,):
+
         self.refund(transaction_id, amount, descriptor, currency,
                     customer)
         self.payload["type"] = "RV"
@@ -370,6 +377,7 @@ class IyzicoPayloadBuilder:
         return self.payload
 
     def installment_matrix(self, amount, bin_number):
+        self.reset()
         self.payload["bin_number"] = bin_number
         self.payload["amount"] = str(100*(int(amount)))
         del self.payload["response_mode"]
