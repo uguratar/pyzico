@@ -14,10 +14,11 @@ if __name__ == '__main__':
     payment = Iyzico()
 
     try:
-        result = payment.debit_with_installment(1, my_card,
+        result = payment.debit_with_installment(6.6612132, my_card,
                                         "Installment "
                                         "Iyzico python library test",
                                         "TRY", my_customer, True, 6)
+
         if result.success:
             print result.transaction_state
             print result.transaction_id

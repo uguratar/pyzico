@@ -251,7 +251,7 @@ class IyzicoPayloadBuilder:
         self.payload['external_id'] = uuid.uuid1().hex
         self._append_object(card_token)
         self.payload["type"] = "DB"
-        self.payload["amount"] = str(100*(int(amount)))
+        self.payload["amount"] = self.format_amount(amount)
         self.payload["currency"] = currency
         self.payload["descriptor"] = descriptor
 
@@ -274,7 +274,7 @@ class IyzicoPayloadBuilder:
 
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "DB"
-        self.payload["amount"] = str(100*(int(amount)))
+        self.payload["amount"] = self.format_amount(amount)
         self.payload["currency"] = currency
         self.payload["descriptor"] = descriptor
 
@@ -323,7 +323,7 @@ class IyzicoPayloadBuilder:
 
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "PA"
-        self.payload["amount"] = str(100*(int(amount)))
+        self.payload["amount"] = self.format_amount(amount)
         self.payload["currency"] = currency
         self.payload["descriptor"] = descriptor
 
@@ -340,7 +340,7 @@ class IyzicoPayloadBuilder:
         self.payload['transaction_id'] = transaction_id
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "CP"
-        self.payload["amount"] = str(100*(int(amount)))
+        self.payload["amount"] = self.format_amount(amount)
         self.payload["currency"] = currency
         self.payload["descriptor"] = descriptor
 
@@ -357,7 +357,7 @@ class IyzicoPayloadBuilder:
         self.payload['transaction_id'] = transaction_id
         self.payload['external_id'] = uuid.uuid1().hex
         self.payload["type"] = "RF"
-        self.payload["amount"] = str(100*(int(amount)))
+        self.payload["amount"] = self.format_amount(amount)
         self.payload["currency"] = currency
         self.payload["descriptor"] = descriptor
 
@@ -379,7 +379,7 @@ class IyzicoPayloadBuilder:
     def installment_matrix(self, amount, bin_number):
         self.reset()
         self.payload["bin_number"] = bin_number
-        self.payload["amount"] = str(100*(int(amount)))
+        self.payload["amount"] = self.format_amount(amount)
         del self.payload["response_mode"]
         return self.payload
 
@@ -387,6 +387,10 @@ class IyzicoPayloadBuilder:
             for attr, value in obj.__dict__.iteritems():
                 if not attr.startswith('_'):
                     self.payload[attr] = value
+
+    @staticmethod
+    def format_amount(amount):
+        return str(int(100 * float("{:.2f}".format(amount))))
 
 
 class IyzicoRequest():
